@@ -1,0 +1,37 @@
+[tool.poetry]
+name = "project-name"
+version = "0.0.1"
+description = ""
+authors = ["Petr Lavrov <calmmage@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.8.1,<4.0"
+# for stability, use frozen-app-name branch
+calmlib = { git = "https://github.com/calmmage/calmlib.git", branch = "main" }
+calmapp = { git = "https://github.com/calmmage/calmapp.git", branch = "main" }
+#calmmage = { git = "https://github.com/calmmage/calmmage.git", branch = "main" }
+pytest = "*"
+# logging
+loguru = "*"
+toml = "*"
+
+
+[tool.poetry.group.dev.dependencies]
+jupyter = ">=1.0.0"
+jupyter-nbextensions-configurator = "*"
+jupyter_contrib_nbextensions = "*"
+tqdm = "*"
+# pandas = "2.1.0"
+black = "*"
+pre-commit = "*"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[template]
+version = "0.0.3"  # update github workflow
+url = "https://github.com/calmmage/python-app-template.git"
+author = "Petr Lavrov <petrlavrov@calmmage.com>"
+description = "A template for creating an app using calmapp"
