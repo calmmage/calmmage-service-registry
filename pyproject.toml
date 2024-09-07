@@ -7,15 +7,15 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = ">=3.8.1,<4.0"
-# for stability, use frozen-app-name branch
 calmlib = { git = "https://github.com/calmmage/calmlib.git", branch = "main" }
 calmapp = { git = "https://github.com/calmmage/calmapp.git", branch = "main" }
-#calmmage = { git = "https://github.com/calmmage/calmmage.git", branch = "main" }
 pytest = "*"
-# logging
 loguru = "*"
 toml = "*"
-
+fastapi = "*"
+uvicorn = "*"
+pymongo = "*"
+python-telegram-bot = "*"
 
 [tool.poetry.group.dev.dependencies]
 jupyter = ">=1.0.0"
@@ -25,6 +25,7 @@ tqdm = "*"
 # pandas = "2.1.0"
 black = "*"
 pre-commit = "*"
+aiohttp = "*"
 
 [build-system]
 requires = ["poetry-core"]
