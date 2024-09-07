@@ -1,6 +1,7 @@
 import asyncio
 from datetime import datetime, timedelta
 
+import pytz
 from pydantic import BaseModel
 from pymongo import MongoClient
 from telegram import Bot
@@ -61,11 +62,23 @@ class ServiceRegistry:
         await self.telegram_bot.send_message(chat_id=self.chat_id, text=message)
 
     async def send_daily_summary(self):
+
+        tz = pytz.timezone(settings.timezone)
+        summary_time = datetime.strptime(settings.daily_summary_time, "%H:%M").time()
+
         while True:
+            now = datetime.now(tz)
+            target_time = datetime.combine(now.date(), summary_time)
+            target_time = tz.localize(target_time)
+
+            if now > target_time:
+                target_time += timedelta(days=1)
+
+            await asyncio.sleep((target_time - now).total_seconds())
+
             all_services = self.services.find()
             summary = "Daily Service Summary:\n"
             for service_data in all_services:
                 service = Service(**service_data)
                 summary += f"{service.name}: {service.status}\n"
             await self.send_telegram_notification(summary)
-            await asyncio.sleep(settings.daily_summary_interval_seconds)

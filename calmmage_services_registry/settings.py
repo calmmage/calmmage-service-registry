@@ -13,7 +13,9 @@ class Settings(BaseSettings):
     check_interval_seconds: int = 60
     daily_summary_interval_seconds: int = 86400
     api_host: str = "0.0.0.0"
-    api_port: int = 8000
+    api_port: int = 8002
+    timezone: str = "UTC"
+    daily_summary_time: str = "00:00"  # 24-hour format
 
     class Config:
         env_file = ".env"

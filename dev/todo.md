@@ -21,9 +21,18 @@ c) Debug Mode
 d) Testing and Verification
 - Develop strategies for testing and checking that the application actually works
 
-====================================================================================
+e) Comprehensive README
+- Describe the intended usage and user flows
+- Provide instructions for setting up a service to support the service registry
+- Describe features like status notifications to Telegram and service status flow
+
+f) Timezone and Notification Time Settings
+- Set up user/server timezone configuration
+- Allow specifying a specific time for daily notifications to be sent
+
+=================================================================  
 SUGGESTIONS FROM CLAUDE
-====================================================================================
+=================================================================
 
 1. Unit and Integration Testing
     - Write unit tests for each component
