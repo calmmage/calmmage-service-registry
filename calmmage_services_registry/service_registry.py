@@ -7,7 +7,7 @@ from pydantic import BaseModel
 from pymongo import MongoClient
 from telegram import Bot
 
-from calmmage_services_registry.settings import settings
+from calmmage_services_registry.settings import Settings
 
 
 class ServiceStatus(str, Enum):
@@ -28,11 +28,12 @@ class Service(BaseModel):
 
 class ServiceRegistry:
     def __init__(self):
-        self.client = MongoClient(settings.mongodb_url)
-        self.db = self.client[settings.database_name]
+        self.settings = Settings()
+        self.client = MongoClient(self.settings.mongodb_url)
+        self.db = self.client[self.settings.database_name]
         self.services = self.db["services"]
-        self.telegram_bot = Bot(settings.telegram_bot_token)
-        self.chat_id = settings.telegram_chat_id
+        self.telegram_bot = Bot(self.settings.telegram_bot_token)
+        self.chat_id = self.settings.telegram_chat_id
 
     async def add_service(self, service: Service):
         self.services.update_one({"name": service.name}, {"$set": service.dict()}, upsert=True)
@@ -73,32 +74,43 @@ class ServiceRegistry:
 
                 time_since_last_heartbeat = datetime.utcnow() - service.last_heartbeat
 
-                if time_since_last_heartbeat > timedelta(minutes=settings.service_inactive_threshold_minutes):
+                if self.settings.debug_mode:
+                    inactive_threshold = timedelta(seconds=self.settings.debug_inactive_threshold_seconds)
+                    silent_to_down_threshold = timedelta(seconds=self.settings.debug_silent_to_down_seconds)
+                    down_to_dead_threshold = timedelta(seconds=self.settings.debug_down_to_dead_seconds)
+                else:
+                    inactive_threshold = timedelta(minutes=self.settings.service_inactive_threshold_minutes)
+                    silent_to_down_threshold = timedelta(hours=1)
+                    down_to_dead_threshold = timedelta(days=7)
+
+                if time_since_last_heartbeat > inactive_threshold:
                     if service.status == ServiceStatus.ALIVE:
                         service.status = ServiceStatus.SILENT
                         service.silent_since = datetime.utcnow()
                         await self.send_telegram_notification(f"Service {service.name} has gone SILENT!")
-                    elif service.status == ServiceStatus.SILENT and time_since_last_heartbeat > timedelta(hours=1):
+                    elif (
+                        service.status == ServiceStatus.SILENT and time_since_last_heartbeat > silent_to_down_threshold
+                    ):
                         service.status = ServiceStatus.DOWN
                         service.down_since = datetime.utcnow()
                         await self.send_telegram_notification(f"Service {service.name} is now DOWN!")
-                    elif service.status == ServiceStatus.DOWN and time_since_last_heartbeat > timedelta(days=7):
+                    elif service.status == ServiceStatus.DOWN and time_since_last_heartbeat > down_to_dead_threshold:
                         service.status = ServiceStatus.DEAD
                         await self.send_telegram_notification(f"Service {service.name} is now considered DEAD!")
 
                 await self.update_service(service)
 
-            await asyncio.sleep(settings.check_interval_seconds)
+            await asyncio.sleep(self.settings.check_interval_seconds)
 
     async def send_telegram_notification(self, message: str):
         await self.telegram_bot.send_message(chat_id=self.chat_id, text=message)
 
     async def send_daily_summary(self):
-        tz = pytz.timezone(settings.timezone)
-        summary_time = datetime.strptime(settings.daily_summary_time, "%H:%M").time()
+        tz = pytz.timezone(self.settings.timezone)
+        summary_time = datetime.strptime(self.settings.daily_summary_time, "%H:%M").time()
 
         while True:
-            if not settings.debug_mode:
+            if not self.settings.debug_mode:
                 now = datetime.now(tz)
                 target_time = datetime.combine(now.date(), summary_time)
                 target_time = tz.localize(target_time)
@@ -114,5 +126,5 @@ class ServiceRegistry:
                 service = Service(**service_data)
                 summary += f"{service.name}: {service.status}\n"
             await self.send_telegram_notification(summary)
-            if settings.debug_mode:
-                await asyncio.sleep(settings.debug_summary_interval_seconds)
+            if self.settings.debug_mode:
+                await asyncio.sleep(self.settings.debug_summary_interval_seconds)

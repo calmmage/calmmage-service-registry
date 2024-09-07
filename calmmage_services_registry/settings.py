@@ -1,5 +1,5 @@
-from pydantic_settings import BaseSettings
 from dotenv import load_dotenv
+from pydantic_settings import BaseSettings
 
 load_dotenv()
 
@@ -18,10 +18,14 @@ class Settings(BaseSettings):
     daily_summary_time: str = "00:00"  # 24-hour format
     debug_mode: bool = False
     debug_summary_interval_seconds: int = 300  # 5 minutes in debug mode
+    debug_inactive_threshold_seconds: int = 30
+    debug_silent_to_down_seconds: int = 60
+    debug_down_to_dead_seconds: int = 120
 
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
 
-
-settings = Settings()
+    class Config:
+        env_file = ".env"
+        env_file_encoding = "utf-8"
