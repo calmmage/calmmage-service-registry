@@ -36,14 +36,14 @@ class ServiceRegistry:
         self.chat_id = self.settings.telegram_chat_id
 
     async def add_service(self, service: Service):
-        self.services.update_one({"name": service.name}, {"$set": service.dict()}, upsert=True)
+        self.services.update_one({"name": service.name}, {"$set": service.model_dump()}, upsert=True)
 
     async def get_service(self, name: str):
         service_data = self.services.find_one({"name": name})
         return Service(**service_data) if service_data else None
 
     async def update_service(self, service: Service):
-        self.services.update_one({"name": service.name}, {"$set": service.dict()}, upsert=True)
+        self.services.update_one({"name": service.name}, {"$set": service.model_dump()}, upsert=True)
 
     async def delete_service(self, name: str):
         self.services.delete_one({"name": name})
@@ -53,7 +53,7 @@ class ServiceRegistry:
         if not service:
             service = Service(name=name)
 
-        service.last_heartbeat = datetime.utcnow()
+        service.last_heartbeat = datetime.now()
 
         if service.status != ServiceStatus.ALIVE:
             await self.send_telegram_notification(f"Service {service.name} is now ALIVE!")
@@ -72,7 +72,7 @@ class ServiceRegistry:
                 if service.status == ServiceStatus.DEAD:
                     continue
 
-                time_since_last_heartbeat = datetime.utcnow() - service.last_heartbeat
+                time_since_last_heartbeat = datetime.now() - service.last_heartbeat
 
                 if self.settings.debug_mode:
                     inactive_threshold = timedelta(seconds=self.settings.debug_inactive_threshold_seconds)
@@ -86,13 +86,13 @@ class ServiceRegistry:
                 if time_since_last_heartbeat > inactive_threshold:
                     if service.status == ServiceStatus.ALIVE:
                         service.status = ServiceStatus.SILENT
-                        service.silent_since = datetime.utcnow()
+                        service.silent_since = datetime.now()
                         await self.send_telegram_notification(f"Service {service.name} has gone SILENT!")
                     elif (
                         service.status == ServiceStatus.SILENT and time_since_last_heartbeat > silent_to_down_threshold
                     ):
                         service.status = ServiceStatus.DOWN
-                        service.down_since = datetime.utcnow()
+                        service.down_since = datetime.now()
                         await self.send_telegram_notification(f"Service {service.name} is now DOWN!")
                     elif service.status == ServiceStatus.DOWN and time_since_last_heartbeat > down_to_dead_threshold:
                         service.status = ServiceStatus.DEAD
