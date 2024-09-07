@@ -30,7 +30,7 @@ class ServiceRegistry:
         return Service(**service_data) if service_data else None
 
     async def update_service(self, service: Service):
-        self.services.update_one({"name": service.name}, {"$set": service.dict()})
+        self.services.update_one({"name": service.name}, {"$set": service.dict()}, upsert=True)
 
     async def delete_service(self, name: str):
         self.services.delete_one({"name": name})
@@ -39,6 +39,7 @@ class ServiceRegistry:
         service = await self.get_service(name)
         if not service:
             service = Service(name=name)
+            await self.add_service(service)
         service.last_heartbeat = datetime.utcnow()
         service.status = "active"
         await self.update_service(service)
