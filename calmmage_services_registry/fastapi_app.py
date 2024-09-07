@@ -1,7 +1,9 @@
-from fastapi import FastAPI
 import asyncio
 
+from fastapi import FastAPI
+
 from calmmage_services_registry.service_registry import ServiceRegistry, Service
+from calmmage_services_registry.settings import settings
 
 
 def main():
@@ -44,7 +46,9 @@ def main():
 
     return app
 
+
 if __name__ == "__main__":
     import uvicorn
+
     app = main()
-    uvicorn.run(app, host="0.0.0.0", port=8002)
+    uvicorn.run(app, host=settings.api_host, port=settings.api_port)

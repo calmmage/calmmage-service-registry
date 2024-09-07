@@ -2,6 +2,11 @@ import pytest
 
 
 def test_imports():
-    from project_name.main import MyApp
+    from calmmage_services_registry.settings import Settings
 
-    assert MyApp
+    assert Settings
+
+    from calmmage_services_registry.service_registry import Service, ServiceRegistry
+
+    assert Service
+    assert ServiceRegistry

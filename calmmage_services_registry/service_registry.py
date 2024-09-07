@@ -5,19 +5,22 @@ from pydantic import BaseModel
 from pymongo import MongoClient
 from telegram import Bot
 
+from calmmage_services_registry.settings import settings
+
 
 class Service(BaseModel):
     name: str
     last_heartbeat: datetime = None
     status: str = "unknown"
 
+
 class ServiceRegistry:
     def __init__(self):
-        self.client = MongoClient("mongodb://localhost:27017/")
-        self.db = self.client["service_registry"]
+        self.client = MongoClient(settings.mongodb_url)
+        self.db = self.client[settings.database_name]
         self.services = self.db["services"]
-        self.telegram_bot = Bot("YOUR_TELEGRAM_BOT_TOKEN")
-        self.chat_id = "YOUR_TELEGRAM_CHAT_ID"
+        self.telegram_bot = Bot(settings.telegram_bot_token)
+        self.chat_id = settings.telegram_chat_id
 
     async def add_service(self, service: Service):
         self.services.update_one({"name": service.name}, {"$set": service.dict()}, upsert=True)
@@ -45,11 +48,13 @@ class ServiceRegistry:
             all_services = self.services.find()
             for service_data in all_services:
                 service = Service(**service_data)
-                if service.last_heartbeat and datetime.utcnow() - service.last_heartbeat > timedelta(minutes=5):
+                if service.last_heartbeat and datetime.utcnow() - service.last_heartbeat > timedelta(
+                    minutes=settings.service_inactive_threshold_minutes
+                ):
                     service.status = "inactive"
                     await self.update_service(service)
                     await self.send_telegram_notification(f"Service {service.name} is inactive!")
-            await asyncio.sleep(60)  # Check every minute
+            await asyncio.sleep(settings.check_interval_seconds)
 
     async def send_telegram_notification(self, message: str):
         await self.telegram_bot.send_message(chat_id=self.chat_id, text=message)
@@ -62,4 +67,4 @@ class ServiceRegistry:
                 service = Service(**service_data)
                 summary += f"{service.name}: {service.status}\n"
             await self.send_telegram_notification(summary)
-            await asyncio.sleep(86400)  # Wait for 24 hours
+            await asyncio.sleep(settings.daily_summary_interval_seconds)

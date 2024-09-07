@@ -2,6 +2,7 @@ import asyncio
 import aiohttp
 import random
 
+
 class DummyService:
     def __init__(self, name, registry_url):
         self.name = name
@@ -23,15 +24,17 @@ class DummyService:
             await self.send_heartbeat()
             await asyncio.sleep(random.randint(30, 90))  # Random interval between 30 and 90 seconds
 
+
 async def main():
     services = [
-        DummyService("service1", "http://localhost:8000"),
-        DummyService("service2", "http://localhost:8000"),
-        DummyService("service3", "http://localhost:8000"),
+        DummyService("service1", "http://localhost:8002"),
+        DummyService("service2", "http://localhost:8002"),
+        DummyService("service3", "http://localhost:8002"),
     ]
 
     tasks = [asyncio.create_task(service.run()) for service in services]
     await asyncio.gather(*tasks)
+
 
 if __name__ == "__main__":
     asyncio.run(main())

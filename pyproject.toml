@@ -1,6 +1,6 @@
 [tool.poetry]
-name = "project-name"
-version = "0.0.1"
+name = "calmmage-services-registry"
+version = "0.0.2"
 description = ""
 authors = ["Petr Lavrov <calmmage@gmail.com>"]
 readme = "README.md"
@@ -16,6 +16,7 @@ fastapi = "*"
 uvicorn = "*"
 pymongo = "*"
 python-telegram-bot = "*"
+pydantic-settings = "*"
 
 [tool.poetry.group.dev.dependencies]
 jupyter = ">=1.0.0"
