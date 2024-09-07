@@ -1,9 +1,10 @@
-from fastapi import FastAPI
-from pymongo import MongoClient
-from pydantic import BaseModel
-from datetime import datetime, timedelta
 import asyncio
+from datetime import datetime, timedelta
+
+from pydantic import BaseModel
+from pymongo import MongoClient
 from telegram import Bot
+
 
 class Service(BaseModel):
     name: str
@@ -39,7 +40,7 @@ class ServiceRegistry:
         service.status = "active"
         await self.update_service(service)
 
-    async def check_services(self):
+    async def check_inactive_services(self):
         while True:
             all_services = self.services.find()
             for service_data in all_services:
@@ -48,7 +49,7 @@ class ServiceRegistry:
                     service.status = "inactive"
                     await self.update_service(service)
                     await self.send_telegram_notification(f"Service {service.name} is inactive!")
-            await asyncio.sleep(300)  # Check every 5 minutes
+            await asyncio.sleep(60)  # Check every minute
 
     async def send_telegram_notification(self, message: str):
         await self.telegram_bot.send_message(chat_id=self.chat_id, text=message)

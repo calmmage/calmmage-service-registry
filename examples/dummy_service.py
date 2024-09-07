@@ -1,7 +1,3 @@
-# Project: calmmage-services-registry
-# Path: calmmage_services_registry/dummy_service.py
-# Start: 0
-# Remove lines: all
 import asyncio
 import aiohttp
 import random

@@ -10,7 +10,7 @@ def main():
 
     @app.on_event("startup")
     async def startup_event():
-        asyncio.create_task(registry.check_services())
+        asyncio.create_task(registry.check_inactive_services())
         asyncio.create_task(registry.send_daily_summary())
 
     @app.post("/heartbeat/{service_name}")
@@ -47,4 +47,4 @@ def main():
 if __name__ == "__main__":
     import uvicorn
     app = main()
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8002)
