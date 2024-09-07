@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "calmmage-services-registry"
-version = "0.0.4" # service lifecycle
+version = "0.0.5" # bugfixes
 description = ""
 authors = ["Petr Lavrov <calmmage@gmail.com>"]
 readme = "README.md"

@@ -1,12 +1,21 @@
 import asyncio
-import aiohttp
-import random
 import os
+import random
+from enum import Enum
+
+import aiohttp
 from dotenv import load_dotenv
 
 load_dotenv()
 
-DEBUG_MODE = os.getenv('DEBUG_MODE', 'False').lower() == 'true'
+DEBUG_MODE = os.getenv("DEBUG_MODE", "False").lower() == "true"
+
+
+class ServiceBehavior(Enum):
+    ALWAYS_ALIVE = 1
+    PING_ONCE_THEN_DIE = 2
+    PING_GO_SILENT_REVIVE = 3
+
 
 class DummyService:
     def __init__(self, name, registry_url, behavior):
@@ -53,7 +62,7 @@ class DummyService:
             else:
                 raise ValueError(f"Unknown behavior: {self.behavior}")
 
-async def main():
+
 async def main():
     registry_url = "http://localhost:8002"
     services = [
@@ -64,6 +73,7 @@ async def main():
 
     tasks = [asyncio.create_task(service.run()) for service in services]
     await asyncio.gather(*tasks)
+
 
 if __name__ == "__main__":
     asyncio.run(main())

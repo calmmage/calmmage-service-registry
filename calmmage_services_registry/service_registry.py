@@ -1,6 +1,7 @@
 import asyncio
 from datetime import datetime, timedelta
 from enum import Enum
+from typing import Optional
 
 import pytz
 from pydantic import BaseModel
@@ -20,10 +21,10 @@ class ServiceStatus(str, Enum):
 
 class Service(BaseModel):
     name: str
-    last_heartbeat: datetime = None
+    last_heartbeat: Optional[datetime] = None
     status: ServiceStatus = ServiceStatus.UNKNOWN
-    silent_since: datetime = None
-    down_since: datetime = None
+    silent_since: Optional[datetime] = None
+    down_since: Optional[datetime] = None
 
 
 class ServiceRegistry:
@@ -71,6 +72,9 @@ class ServiceRegistry:
                 service = Service(**service_data)
                 if service.status == ServiceStatus.DEAD:
                     continue
+
+                if service.last_heartbeat is None:
+                    continue  # Skip services that haven't sent a heartbeat yet
 
                 time_since_last_heartbeat = datetime.now() - service.last_heartbeat
 

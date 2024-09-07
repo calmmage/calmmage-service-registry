@@ -1,9 +1,21 @@
 import asyncio
 
 from fastapi import FastAPI
+from pydantic_settings import BaseSettings
 
 from calmmage_services_registry.service_registry import ServiceRegistry, Service
-from calmmage_services_registry.settings import settings
+
+
+class FastAPISettings(BaseSettings):
+    api_host: str = "0.0.0.0"
+    api_port: int = 8002
+
+    class Config:
+        env_prefix = "fastapi_"
+        env_file = ".env"
+
+
+fastapi_settings = FastAPISettings()
 
 
 def main():
@@ -51,4 +63,4 @@ if __name__ == "__main__":
     import uvicorn
 
     app = main()
-    uvicorn.run(app, host=settings.api_host, port=settings.api_port)
+    uvicorn.run(app, host=fastapi_settings.api_host, port=fastapi_settings.api_port)
