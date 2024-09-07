@@ -16,6 +16,8 @@ class Settings(BaseSettings):
     api_port: int = 8002
     timezone: str = "UTC"
     daily_summary_time: str = "00:00"  # 24-hour format
+    debug_mode: bool = False
+    debug_summary_interval_seconds: int = 300  # 5 minutes in debug mode
 
     class Config:
         env_file = ".env"
