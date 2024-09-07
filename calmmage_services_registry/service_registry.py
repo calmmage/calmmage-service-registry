@@ -1,5 +1,6 @@
 import asyncio
 from datetime import datetime, timedelta
+from enum import Enum
 
 import pytz
 from pydantic import BaseModel
@@ -9,10 +10,20 @@ from telegram import Bot
 from calmmage_services_registry.settings import settings
 
 
+class ServiceStatus(str, Enum):
+    UNKNOWN = "unknown"
+    ALIVE = "alive"
+    SILENT = "silent"
+    DOWN = "down"
+    DEAD = "dead"
+
+
 class Service(BaseModel):
     name: str
     last_heartbeat: datetime = None
-    status: str = "unknown"
+    status: ServiceStatus = ServiceStatus.UNKNOWN
+    silent_since: datetime = None
+    down_since: datetime = None
 
 
 class ServiceRegistry:
@@ -40,9 +51,16 @@ class ServiceRegistry:
         service = await self.get_service(name)
         if not service:
             service = Service(name=name)
-            await self.add_service(service)
+
         service.last_heartbeat = datetime.utcnow()
-        service.status = "active"
+
+        if service.status != ServiceStatus.ALIVE:
+            await self.send_telegram_notification(f"Service {service.name} is now ALIVE!")
+
+        service.status = ServiceStatus.ALIVE
+        service.silent_since = None
+        service.down_since = None
+
         await self.update_service(service)
 
     async def check_inactive_services(self):
@@ -50,12 +68,26 @@ class ServiceRegistry:
             all_services = self.services.find()
             for service_data in all_services:
                 service = Service(**service_data)
-                if service.last_heartbeat and datetime.utcnow() - service.last_heartbeat > timedelta(
-                    minutes=settings.service_inactive_threshold_minutes
-                ):
-                    service.status = "inactive"
-                    await self.update_service(service)
-                    await self.send_telegram_notification(f"Service {service.name} is inactive!")
+                if service.status == ServiceStatus.DEAD:
+                    continue
+
+                time_since_last_heartbeat = datetime.utcnow() - service.last_heartbeat
+
+                if time_since_last_heartbeat > timedelta(minutes=settings.service_inactive_threshold_minutes):
+                    if service.status == ServiceStatus.ALIVE:
+                        service.status = ServiceStatus.SILENT
+                        service.silent_since = datetime.utcnow()
+                        await self.send_telegram_notification(f"Service {service.name} has gone SILENT!")
+                    elif service.status == ServiceStatus.SILENT and time_since_last_heartbeat > timedelta(hours=1):
+                        service.status = ServiceStatus.DOWN
+                        service.down_since = datetime.utcnow()
+                        await self.send_telegram_notification(f"Service {service.name} is now DOWN!")
+                    elif service.status == ServiceStatus.DOWN and time_since_last_heartbeat > timedelta(days=7):
+                        service.status = ServiceStatus.DEAD
+                        await self.send_telegram_notification(f"Service {service.name} is now considered DEAD!")
+
+                await self.update_service(service)
+
             await asyncio.sleep(settings.check_interval_seconds)
 
     async def send_telegram_notification(self, message: str):
