@@ -1,12 +1,12 @@
 import asyncio
 import aiohttp
 import random
-from enum import Enum
+import os
+from dotenv import load_dotenv
 
-class ServiceBehavior(Enum):
-    ALWAYS_ALIVE = 1
-    PING_ONCE_THEN_DIE = 2
-    PING_GO_SILENT_REVIVE = 3
+load_dotenv()
+
+DEBUG_MODE = os.getenv('DEBUG_MODE', 'False').lower() == 'true'
 
 class DummyService:
     def __init__(self, name, registry_url, behavior):
@@ -36,7 +36,7 @@ class DummyService:
         while True:
             if self.behavior == ServiceBehavior.ALWAYS_ALIVE:
                 await self.send_heartbeat()
-                await asyncio.sleep(random.randint(30, 90))
+                await asyncio.sleep(random.randint(5, 15) if DEBUG_MODE else random.randint(30, 90))
             elif self.behavior == ServiceBehavior.PING_ONCE_THEN_DIE:
                 if self.ping_count == 0:
                     await self.send_heartbeat()
@@ -45,14 +45,15 @@ class DummyService:
             elif self.behavior == ServiceBehavior.PING_GO_SILENT_REVIVE:
                 if self.ping_count < 3:
                     await self.send_heartbeat()
-                    await asyncio.sleep(random.randint(30, 90))
+                    await asyncio.sleep(random.randint(5, 15) if DEBUG_MODE else random.randint(30, 90))
                 elif self.ping_count < 10:
-                    await asyncio.sleep(60)  # Silent period
+                    await asyncio.sleep(10 if DEBUG_MODE else 60)  # Silent period
                 else:
                     self.ping_count = 0  # Reset and revive
             else:
                 raise ValueError(f"Unknown behavior: {self.behavior}")
 
+async def main():
 async def main():
     registry_url = "http://localhost:8002"
     services = [
