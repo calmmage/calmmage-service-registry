@@ -5,10 +5,12 @@ WORKDIR /app
 
 RUN pip install poetry
 
-COPY pyproject.toml poetry.lock ./
+COPY pyproject.toml ./
 RUN poetry config virtualenvs.create false \
-    && poetry install --no-dev --no-interaction --no-ansi
+    && poetry install --no-dev
 
 COPY . .
+
+EXPOSE 8002
 
 CMD ["python", "-m", "calmmage_services_registry.fastapi_app"]

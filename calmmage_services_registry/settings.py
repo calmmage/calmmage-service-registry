@@ -9,7 +9,7 @@ class Settings(BaseSettings):
     database_name: str = "service_registry"
     telegram_bot_token: str
     telegram_chat_id: str
-    service_inactive_threshold_minutes: int = 5
+    service_inactive_threshold_minutes: int = 15
     check_interval_seconds: int = 60
     daily_summary_interval_seconds: int = 86400
     timezone: str = "UTC"
