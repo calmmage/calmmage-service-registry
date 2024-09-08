@@ -1,5 +1,28 @@
 # Calmmage Services Registry
 
+## Main instructions:
+### Deployment to Coolify
+- set up coolify on Hetzner, including firewall and stuff
+- buy and set up personal domain to coolify
+
+- Set up coolify service
+  - populate env variables
+  - specify application port 
+  - specify domain e.g. service-registry.coolify.io
+
+#### extra notes to sort
+Telegram
+  - todo: allow skipping telegram bot token creation
+  - telegram bot token - create using botfather
+  - write /start command to your bot to allow it to write to you
+
+
+
+### How to test the connection to coolify
+
+
+
+
 The Calmmage Services Registry is a robust system for monitoring and managing the status of various services. It provides a centralized registry for services to report their status and allows for easy monitoring and notification of service health.
 
 ## Features

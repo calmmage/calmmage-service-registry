@@ -9,9 +9,11 @@
 
 ---
 
-Calmmage Notifications manager
+6) Calmmage Notifications manager
 
-And in general maybe outstading items manager
+7) And in general maybe outstading items manager
+that tracks how successful I am and manages processes and habits in general. 
+Like in general is able to help me coordinate my agenda 
 
 feature: 
 - track if my state is good or bad and coordinate correspoondingly. How much energy I have
@@ -21,3 +23,6 @@ feature:
 - populate events according to some formula
 
 
+8) Service: Calmmage examples manager
+- make sure all my libraries and features / tools have examples..
+  (Tools from Notion db?)

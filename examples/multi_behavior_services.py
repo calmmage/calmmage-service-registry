@@ -5,10 +5,26 @@ from enum import Enum
 
 import aiohttp
 from dotenv import load_dotenv
+from loguru import logger
+from pydantic_settings import BaseSettings
 
 load_dotenv()
 
 DEBUG_MODE = os.getenv("DEBUG_MODE", "False").lower() == "true"
+
+# host = os.getenv("SERVICE_REGISTRY_HOST", "localhost")
+# port = os.getenv("SERVICE_REGISTRY_PORT", "8002")
+
+
+class Settings(BaseSettings):
+    host: str = "localhost"
+    port: int = 8002
+    https: bool = False
+
+    class Config:
+        env_prefix = "service_registry_"
+        env_file = ".env"
+        extra = "ignore"
 
 
 class ServiceBehavior(Enum):
@@ -36,6 +52,7 @@ class DummyService:
                         print(f"Heartbeat sent for {self.name}")
                     else:
                         print(f"Failed to send heartbeat for {self.name}")
+                        print(await response.text())
             except aiohttp.ClientError as e:
                 print(f"Error sending heartbeat for {self.name}: {e}")
 
@@ -64,7 +81,19 @@ class DummyService:
 
 
 async def main():
-    registry_url = "http://localhost:8002"
+    settings = Settings()
+    if settings.https:
+        registry_url = f"https://{settings.host}"
+        if settings.port and settings.port != 443:
+            registry_url += f":{settings.port}"
+    else:
+
+        registry_url = f"http://{settings.host}"
+        if settings.port:
+            registry_url += f":{settings.port}"
+
+    logger.info("Launching with Registry URL: {}", registry_url)
+    # registry_url = "http://localhost:8002"
     services = [
         DummyService("always_alive", registry_url, ServiceBehavior.ALWAYS_ALIVE),
         DummyService("ping_once_die", registry_url, ServiceBehavior.PING_ONCE_THEN_DIE),
