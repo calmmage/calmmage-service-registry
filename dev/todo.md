@@ -51,6 +51,13 @@ j) Convenient Service Naming
 - Implement smart default naming (e.g., auto-detect IP address or file name)
 - Allow users to override default names with a simple env var
 
+k) Deployment
+    - Create Docker containers for easy deployment
+        - main service
+        - database?
+        - web dashboard
+    - Deploy to coolify
+
 ## Additional Suggestions
 
 1. Unit and Integration Testing
@@ -69,9 +76,6 @@ j) Convenient Service Naming
     - Write API documentation
     - Create a user guide for setting up and using the service registry
 
-5. Deployment
-    - Create Docker containers for easy deployment
-    - Set up CI/CD pipelines for automated testing and deployment
 
 6. Security Enhancements
     - Implement proper error handling
