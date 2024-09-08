@@ -2,8 +2,13 @@ import asyncio
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from fastapi.responses import HTMLResponse
+from fastui import prebuilt_html
+from httpx import AsyncClient
+from pydantic import BaseModel
 from pydantic_settings import BaseSettings
 
+from calmmage_services_registry.dashboard import router
 from calmmage_services_registry.service_registry import ServiceRegistry, Service
 
 
@@ -14,9 +19,17 @@ class FastAPISettings(BaseSettings):
     class Config:
         env_prefix = "fastapi_"
         env_file = ".env"
+        extra = "ignore"
 
 
 fastapi_settings = FastAPISettings()
+
+
+class ServiceStatusDisplay(BaseModel):
+    name: str
+    status: str
+    last_heartbeat: str
+    duration: str
 
 
 @asynccontextmanager
@@ -26,7 +39,9 @@ async def lifespan(app: FastAPI):
     inactive_task = asyncio.create_task(registry.check_inactive_services())
     summary_task = asyncio.create_task(registry.send_daily_summary())
 
-    yield
+    async with AsyncClient() as client:
+        app.state.httpx_client = client
+        yield
 
     # Shutdown: cancel the tasks
     inactive_task.cancel()
@@ -70,6 +85,16 @@ def main():
     async def delete_service(service_name: str):
         await registry.delete_service(service_name)
         return {"status": "ok"}
+
+    app.include_router(router, prefix="/api")
+
+    @app.get("/{path:path}")
+    async def html_landing() -> HTMLResponse:
+        """
+        # this part is essential for the frontend to work!!!
+        :return:
+        """
+        return HTMLResponse(prebuilt_html(title="FastUI Demo"))
 
     return app
 
