@@ -1,4 +1,5 @@
 import asyncio
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from pydantic_settings import BaseSettings
@@ -18,14 +19,28 @@ class FastAPISettings(BaseSettings):
 fastapi_settings = FastAPISettings()
 
 
-def main():
-    app = FastAPI()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup: create tasks for checking inactive services and sending daily summaries
     registry = ServiceRegistry()
+    inactive_task = asyncio.create_task(registry.check_inactive_services())
+    summary_task = asyncio.create_task(registry.send_daily_summary())
 
-    @app.on_event("startup")
-    async def startup_event():
-        asyncio.create_task(registry.check_inactive_services())
-        asyncio.create_task(registry.send_daily_summary())
+    yield
+
+    # Shutdown: cancel the tasks
+    inactive_task.cancel()
+    summary_task.cancel()
+    try:
+        await inactive_task
+        await summary_task
+    except asyncio.CancelledError:
+        pass
+
+
+def main():
+    app = FastAPI(lifespan=lifespan)
+    registry = ServiceRegistry()
 
     @app.post("/heartbeat/{service_name}")
     async def heartbeat(service_name: str):
