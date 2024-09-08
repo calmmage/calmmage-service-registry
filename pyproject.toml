@@ -18,7 +18,7 @@ pymongo = "*"
 python-telegram-bot = "*"
 pydantic-settings = "*"
 pytz = "^2024.1"
-
+humanize = "*"
 [tool.poetry.group.dev.dependencies]
 jupyter = ">=1.0.0"
 jupyter-nbextensions-configurator = "*"

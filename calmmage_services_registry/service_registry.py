@@ -124,11 +124,34 @@ class ServiceRegistry:
 
                 await asyncio.sleep((target_time - now).total_seconds())
 
-            all_services = self.services.find()
-            summary = "Daily Service Summary:\n"
-            for service_data in all_services:
-                service = Service(**service_data)
-                summary += f"{service.name}: {service.status}\n"
+            all_services = list(self.services.find())
+            summary = "Daily Service Summary:\n\n"
+
+            # List down and silent services
+            down_services = [
+                Service(**s) for s in all_services if s["status"] in [ServiceStatus.DOWN, ServiceStatus.SILENT]
+            ]
+            if down_services:
+                summary += "Services with issues:\n"
+                for service in down_services:
+                    status = service.status.value.capitalize()
+                    duration = ""
+                    if service.status == ServiceStatus.DOWN and service.down_since:
+                        duration = f" for {humanize.naturaltime(datetime.now() - service.down_since)}"
+                    elif service.status == ServiceStatus.SILENT and service.silent_since:
+                        duration = f" for {humanize.naturaltime(datetime.now() - service.silent_since)}"
+                    summary += f"- {service.name}: {status}{duration}\n"
+                summary += "\n"
+            else:
+                summary += "All services are healthy!\n"
+
+            # List alive services
+            alive_services = [Service(**s) for s in all_services if s["status"] == ServiceStatus.ALIVE]
+            if alive_services:
+                summary += "**Alive services: **\n"
+                summary += "\n".join(s.name for s in alive_services)
+                summary += "\n"
+
             await self.send_telegram_notification(summary)
             if self.settings.debug_mode:
                 await asyncio.sleep(self.settings.debug_summary_interval_seconds)
