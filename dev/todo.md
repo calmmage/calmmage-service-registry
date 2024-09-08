@@ -6,7 +6,7 @@ a) Web Dashboard using FastUI
 - Create a simple web dashboard to see the statuses of the apps
 - Use FastUI for implementation
 
-b) Enhanced Service Lifecycle
+- [x] b) Enhanced Service Lifecycle
 - Implement a basic lifetime flow for the service: alive -> silent -> down -> dead
 - Implement logic for how this is used:
     * Soft notify when service is silent
@@ -14,19 +14,19 @@ b) Enhanced Service Lifecycle
     * Stop including in daily summaries once service is dead (after a week of downtime)
 - Notify when a service went silent
 
-c) Debug Mode
+- [x] c) Debug Mode
 - Create a 'debug' mode in which things are much faster
 - Example: 'daily' summary is sent more frequently in debug mode
 
 d) Testing and Verification
 - Develop strategies for testing and checking that the application actually works
 
-e) Comprehensive README
+- [x] e) Comprehensive README
 - Describe the intended usage and user flows
 - Provide instructions for setting up a service to support the service registry
 - Describe features like status notifications to Telegram and service status flow
 
-f) Timezone and Notification Time Settings
+- [x] f) Timezone and Notification Time Settings
 - Set up user/server timezone configuration
 - Allow specifying a specific time for daily notifications to be sent
 
