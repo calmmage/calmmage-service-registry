@@ -8,7 +8,7 @@ from httpx import AsyncClient
 from pydantic import BaseModel
 from pydantic_settings import BaseSettings
 
-from calmmage_services_registry.dashboard import router
+from calmmage_services_registry.dashboard import router as dashboard_router
 from calmmage_services_registry.service_registry import ServiceRegistry, Service
 
 
@@ -86,7 +86,7 @@ def main():
         await registry.delete_service(service_name)
         return {"status": "ok"}
 
-    app.include_router(router, prefix="/api")
+    app.include_router(dashboard_router, prefix="/api")
 
     @app.get("/{path:path}")
     async def html_landing() -> HTMLResponse:
@@ -94,7 +94,7 @@ def main():
         # this part is essential for the frontend to work!!!
         :return:
         """
-        return HTMLResponse(prebuilt_html(title="FastUI Demo"))
+        return HTMLResponse(prebuilt_html(title="Calmmage Services Registry"))
 
     return app
 
