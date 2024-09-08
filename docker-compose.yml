@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+#  mongodb:
+#    image: mongo:latest
+#    ports:
+#      - "27017:27017"
+#    volumes:
+#      - mongodb_data:/data/db
+
+  main_service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8002:8002"
+    environment:
+      # todo: add all the environment variables
+      - MONGODB_URL=mongodb://mongodb:27017/
+      - DATABASE_NAME=service_registry
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}
+#    depends_on:
+#      - mongodb
+
+  dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile.dashboard
+    ports:
+      - "8005:8005"
+    environment:
+#      - MONGODB_URL=mongodb://mongodb:27017/
+      - DATABASE_NAME=service_registry
+    depends_on:
+#      - mongodb
+      - main_service
+
+#volumes:
+#  mongodb_data:

@@ -11,4 +11,4 @@ RUN poetry config virtualenvs.create false \
 
 COPY . .
 
-CMD ["python", "-m", "calmmage_services_registry.fastapi_app"]
+CMD ["python", "-m", "calmmage_services_registry.dashboard"]

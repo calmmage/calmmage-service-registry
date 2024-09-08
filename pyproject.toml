@@ -19,6 +19,8 @@ python-telegram-bot = "*"
 pydantic-settings = "*"
 pytz = "^2024.1"
 humanize = "*"
+fastui = "^0.7.0"
+
 [tool.poetry.group.dev.dependencies]
 jupyter = ">=1.0.0"
 jupyter-nbextensions-configurator = "*"
