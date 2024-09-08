@@ -1,6 +1,9 @@
 # TODO List and Improvement Ideas
 
-## Requested Improvements
+=================================================================  
+Todos
+=================================================================
+
 
 a) Web Dashboard using FastUI
 - Create a simple web dashboard to see the statuses of the apps
@@ -58,7 +61,17 @@ k) Deployment
         - web dashboard
     - Deploy to coolify
 
-## Additional Suggestions
+l) Track History of Heartbeats/Statuses
+    - Save log of all events to MongoDB
+    - Consider integrating with Grafana or ELK stack for visualization in the future
+
+m) Authentication for Dashboard
+    - Implement user authentication for the dashboard
+    - Ensure only authorized users (e.g., you) can access the dashboard
+
+=================================================================  
+EXTRA SUGGESTIONS FROM CLAUDE
+=================================================================
 
 1. Unit and Integration Testing
     - Write unit tests for each component
