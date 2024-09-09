@@ -25,7 +25,8 @@ def is_heartbeat_env_initialized() -> bool:
     return os.getenv("HEARTBEAT_HOST") is not None
 
 
-def send_heartbeat(settings: HeartbeatSettings):
+def send_heartbeat(**kwargs):
+    settings = HeartbeatSettings(**kwargs)
     protocol = "https" if settings.https else "http"
     url = f"{protocol}://{settings.host}:{settings.port}/heartbeat/{settings.service_name}"
 
@@ -39,7 +40,8 @@ def send_heartbeat(settings: HeartbeatSettings):
         logger.error(f"Error sending heartbeat for {settings.service_name}: {e}")
 
 
-async def asend_heartbeat(settings: HeartbeatSettings):
+async def asend_heartbeat(**kwargs):
+    settings = HeartbeatSettings(**kwargs)
     protocol = "https" if settings.https else "http"
     url = f"{protocol}://{settings.host}:{settings.port}/heartbeat/{settings.service_name}"
 
@@ -57,14 +59,14 @@ async def asend_heartbeat(settings: HeartbeatSettings):
 def run_heartbeat(**kwargs):
     settings = HeartbeatSettings(**kwargs)
     while True:
-        send_heartbeat(settings)
+        send_heartbeat(**kwargs)
         time.sleep(settings.heartbeat_interval)
 
 
 async def arun_heartbeat(**kwargs):
     settings = HeartbeatSettings(**kwargs)
     while True:
-        await asend_heartbeat(settings)
+        await asend_heartbeat(**kwargs)
         await asyncio.sleep(settings.heartbeat_interval)
 
 

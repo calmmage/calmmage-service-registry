@@ -3,10 +3,11 @@ import os
 import random
 from enum import Enum
 
-import aiohttp
 from dotenv import load_dotenv
 from loguru import logger
 from pydantic_settings import BaseSettings
+
+from calmmage_services_registry.heartbeat import asend_heartbeat, is_heartbeat_env_initialized
 
 load_dotenv()
 
@@ -31,27 +32,20 @@ class ServiceBehavior(Enum):
 
 
 class DummyService:
-    def __init__(self, name, registry_url, behavior):
+    def __init__(self, name, behavior):
         self.name = name
-        self.registry_url = registry_url
         self.behavior = behavior
         self.is_alive = True
         self.ping_count = 0
+        if not is_heartbeat_env_initialized():
+            # logger.warning(f"Heartbeat environment is not initialized for {self.name}. Skipping heartbeat.")
+            raise ValueError(f"Heartbeat environment is not initialized for {self.name}")
 
     async def send_heartbeat(self):
         if not self.is_alive:
             return
 
-        async with aiohttp.ClientSession() as session:
-            try:
-                async with session.post(f"{self.registry_url}/heartbeat/{self.name}") as response:
-                    if response.status == 200:
-                        print(f"Heartbeat sent for {self.name}")
-                    else:
-                        print(f"Failed to send heartbeat for {self.name}")
-                        print(await response.text())
-            except aiohttp.ClientError as e:
-                print(f"Error sending heartbeat for {self.name}: {e}")
+        await asend_heartbeat(service_name=self.name)
 
         self.ping_count += 1
 
@@ -60,6 +54,7 @@ class DummyService:
             if self.behavior == ServiceBehavior.ALWAYS_ALIVE:
                 await self.send_heartbeat()
                 await asyncio.sleep(random.randint(5, 15) if DEBUG_MODE else random.randint(30, 90))
+
             elif self.behavior == ServiceBehavior.PING_ONCE_THEN_DIE:
                 if self.ping_count == 0:
                     await self.send_heartbeat()
@@ -84,17 +79,15 @@ async def main():
         if settings.port and settings.port != 443:
             registry_url += f":{settings.port}"
     else:
-
         registry_url = f"http://{settings.host}"
         if settings.port:
             registry_url += f":{settings.port}"
-
     logger.info("Launching with Registry URL: {}", registry_url)
-    # registry_url = "http://localhost:8002"
+
     services = [
-        DummyService("always_alive", registry_url, ServiceBehavior.ALWAYS_ALIVE),
-        DummyService("ping_once_die", registry_url, ServiceBehavior.PING_ONCE_THEN_DIE),
-        DummyService("ping_silent_revive", registry_url, ServiceBehavior.PING_GO_SILENT_REVIVE),
+        DummyService("always_alive", ServiceBehavior.ALWAYS_ALIVE),
+        DummyService("ping_once_die", ServiceBehavior.PING_ONCE_THEN_DIE),
+        DummyService("ping_silent_revive", ServiceBehavior.PING_GO_SILENT_REVIVE),
     ]
 
     tasks = [asyncio.create_task(service.run()) for service in services]
