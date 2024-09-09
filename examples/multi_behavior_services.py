@@ -12,9 +12,6 @@ load_dotenv()
 
 DEBUG_MODE = os.getenv("DEBUG_MODE", "False").lower() == "true"
 
-# host = os.getenv("SERVICE_REGISTRY_HOST", "localhost")
-# port = os.getenv("SERVICE_REGISTRY_PORT", "8002")
-
 
 class Settings(BaseSettings):
     host: str = "localhost"
@@ -22,7 +19,7 @@ class Settings(BaseSettings):
     https: bool = False
 
     class Config:
-        env_prefix = "service_registry_"
+        env_prefix = "heartbeat_"
         env_file = ".env"
         extra = "ignore"
 
