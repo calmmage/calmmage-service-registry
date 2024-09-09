@@ -1,11 +1,17 @@
 import time
 
-from calmmage_services_registry.heartbeat import start_heartbeat_thread
+from loguru import logger
+
+from calmmage_services_registry.heartbeat import start_heartbeat_thread, is_heartbeat_env_initialized
 
 
 class App:
     def __init__(self):
-        self.heartbeat_thread = start_heartbeat_thread(service_name="example_app", host="localhost", port=8002)
+        if is_heartbeat_env_initialized():
+            self.heartbeat_thread = start_heartbeat_thread()
+        else:
+            logger.warning("Heartbeat environment is not initialized. Skipping heartbeat.")
+            self.heartbeat_thread = None
 
     def run(self):
         print("App is running...")
