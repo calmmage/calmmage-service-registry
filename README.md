@@ -1,3 +1,7 @@
+---
+ARCHIVED: I found cronitor.io and that covered all my needs here, and more
+
+---
 # Calmmage Services Registry
 
 ## Main instructions:
